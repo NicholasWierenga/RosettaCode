@@ -108,11 +108,7 @@ BEGIN
 
     END LOOP;
 
-    SELECT replace(polstring, ' +', ' ')
-    INTO polstring
-    FROM dual; -- Gets rid of trailing + if they're there.
-
-    RETURN polstring;
+    RETURN replace(polstring, ' +', ' ');
 END;
 
 
