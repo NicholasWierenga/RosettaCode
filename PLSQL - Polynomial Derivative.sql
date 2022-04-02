@@ -108,7 +108,7 @@ BEGIN
 
     END LOOP;
 
-    RETURN replace(polstring, ' +', ' ');
+    RETURN replace(polstring, ' +', ' '); -- Used to get rid of any leading +.
 END;
 
 
