@@ -63,7 +63,7 @@ BEGIN
 
     END LOOP;
 
-    polstring := polstring || '. ' || 'Its derivative is: ';
+    polstring := polstring || '. Its derivative is: ';
     
     IF nums.count = 1 THEN -- Checks if the derived polynomial would be the zero polynomial.
         RETURN replace(polstring, ' +', ' ') || '0.';
@@ -90,7 +90,7 @@ BEGIN
                 WHEN 2 THEN
                     polstring := substr(polstring, 1, length(polstring) - length((i - 1) * nums(i)) + 2);
                 WHEN 3 THEN
-                    polstring := substr(polstring, 1, length(polstring) - length(abs((i - 1) * nums(i))) - 1) || 'x';
+                    polstring := substr(polstring, 1, length(polstring) - length(abs((i - 1) * nums(i)) || 'x')) || 'x';
                 ELSE
                     polstring := substr(polstring, 1, length(polstring) - length(abs((i - 1) * nums(i)) || 'x^' ||(i - 1))) || 'x^' || (
                     i - 2 );
@@ -117,11 +117,11 @@ SELECT polyderiv(coeff(0)) FROM dual -- Zero polynomial functions fine.
 UNION ALL
 SELECT polyderiv(coeff(0, 0, 0, 0, 0, 0)) FROM dual
 UNION ALL
-SELECT polyderiv(coeff(1, 3, -2, 2, - 4)) FROM dual
+SELECT polyderiv(coeff(1, 3, -2, 2, -4)) FROM dual
 UNION ALL
-SELECT polyderiv(coeff(- 1, 1, -.5, 4, - 5)) FROM dual
+SELECT polyderiv(coeff(- 1, 1, -.5, 4, -5)) FROM dual
 UNION ALL
-SELECT polyderiv(coeff(1, 1,.5, 1/3, - 1/4)) FROM dual -- Due to rounding, sometimes we have errors.
+SELECT polyderiv(coeff(1, 1,.5, 1/3, -1/4)) FROM dual -- Due to rounding, sometimes we have errors.
 UNION ALL
 SELECT polyderiv(coeff(0, 3)) FROM dual
 UNION ALL
@@ -140,6 +140,6 @@ SELECT polyderiv(coeff(4, -3)) FROM dual
 UNION ALL
 SELECT polyderiv(coeff(1, 6, 5)) FROM dual
 UNION ALL
-SELECT polyderiv(coeff(4, 3, -2)) FROM dual
+SELECT polyderiv(coeff(-4, 3, -2, 1)) FROM dual
 UNION ALL
-SELECT polyderiv(coeff(1, 1, -1, -1)) FROM dual;
+SELECT polyderiv(coeff(1, 1, 0, -1, -1)) FROM dual;
