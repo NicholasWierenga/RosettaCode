@@ -16,8 +16,8 @@ CREATE OR REPLACE TYPE coeff AS
 
 CREATE OR REPLACE FUNCTION polyderiv (
     nums IN coeff -- Since I don't know how large of a polynomial the function will 
-) RETURN VARCHAR AS -- need to handle we use an array that will contain our polynomial 
-    polstring VARCHAR(2000); -- and that will be used as our function argument.
+) RETURN VARCHAR2 AS -- need to handle we use an array that will contain our polynomial 
+    polstring VARCHAR2(2000); -- and that will be used as our function argument.
 BEGIN
     polstring := 'Original polynomial: ';
     FOR i IN 1..nums.count LOOP -- Check to see if we have the zero polynomial.
@@ -28,6 +28,7 @@ BEGIN
     END LOOP;
 
     FOR i IN 1..nums.count LOOP
+        
         IF sign(nums(i)) = sign(1) THEN
             polstring := polstring || '+';
         END IF;
@@ -48,7 +49,7 @@ BEGIN
                 WHEN 2 THEN
                     polstring := substr(polstring, 1, length(polstring) - length(abs(nums(i)) || 'x')) || 'x';
                 ELSE
-                    polstring := substr(polstring, 1, length(polstring) - length(abs(nums(i)) || 'x^' ||(i - 1))) || 'x^' || ( i - 1 );
+                    polstring := substr(polstring, 1, length(polstring) - length(abs(nums(i)) || 'x^' || (i - 1))) || 'x^' || ( i - 1 );
             END CASE;
         ELSIF nums(i) = 0 THEN
             CASE i -- Used to avoid functions like 1+3x+2x^2+0x^3+0x^4 from resulting in something like 1+3x+2x^2x^3x^4
@@ -57,13 +58,13 @@ BEGIN
                 WHEN 2 THEN
                     polstring := substr(polstring, 1, length(polstring) - length(nums(i) || 'x'));
                 ELSE
-                    polstring := substr(polstring, 1, length(polstring) - length(nums(i) || 'x^' ||(i - 1)));
+                    polstring := substr(polstring, 1, length(polstring) - length(nums(i) || 'x^' || (i - 1)));
             END CASE;
         END IF;
 
     END LOOP;
 
-    polstring := polstring || '. Its derivative is: ';
+    polstring := polstring || '. ' || 'Its derivative is: ';
     
     IF nums.count = 1 THEN -- Checks if the derived polynomial would be the zero polynomial.
         RETURN replace(polstring, ' +', ' ') || '0.';
@@ -90,9 +91,9 @@ BEGIN
                 WHEN 2 THEN
                     polstring := substr(polstring, 1, length(polstring) - length((i - 1) * nums(i)) + 2);
                 WHEN 3 THEN
-                    polstring := substr(polstring, 1, length(polstring) - length(abs((i - 1) * nums(i)) || 'x')) || 'x';
+                    polstring := substr(polstring, 1, length(polstring) - length(abs((i - 1) * nums(i))) - 1) || 'x';
                 ELSE
-                    polstring := substr(polstring, 1, length(polstring) - length(abs((i - 1) * nums(i)) || 'x^' ||(i - 1))) || 'x^' || (
+                    polstring := substr(polstring, 1, length(polstring) - length(abs((i - 1) * nums(i)) || 'x^' || (i - 1))) || 'x^' || (
                     i - 2 );
             END CASE;
         ELSIF nums(i) = 0 THEN
@@ -102,13 +103,13 @@ BEGIN
                 WHEN 3 THEN
                     polstring := substr(polstring, 1, length(polstring) - length(nums(i) || 'x'));
                 ELSE
-                    polstring := substr(polstring, 1, length(polstring) - length(nums(i) || 'x^' ||(i - 2)));
+                    polstring := substr(polstring, 1, length(polstring) - length(nums(i) || 'x^' || (i - 2)));
             END CASE;
         END IF;
 
     END LOOP;
 
-    RETURN replace(polstring, ' +', ' '); -- Used to get rid of any leading +.
+    RETURN replace(polstring, ' +', ' ') || '.'; -- Gets rid of trailing + if they're there.
 END;
 
 
@@ -117,9 +118,9 @@ SELECT polyderiv(coeff(0)) FROM dual -- Zero polynomial functions fine.
 UNION ALL
 SELECT polyderiv(coeff(0, 0, 0, 0, 0, 0)) FROM dual
 UNION ALL
-SELECT polyderiv(coeff(1, 3, -2, 2, -4)) FROM dual
+SELECT polyderiv(coeff(0, 3, -2, 2, - 4)) FROM dual
 UNION ALL
-SELECT polyderiv(coeff(- 1, 1, -.5, 4, -5)) FROM dual
+SELECT polyderiv(coeff(-1, 1, -.5, 4, - 5)) FROM dual
 UNION ALL
 SELECT polyderiv(coeff(1, 1,.5, 1/3, -1/4)) FROM dual -- Due to rounding, sometimes we have errors.
 UNION ALL
@@ -140,6 +141,6 @@ SELECT polyderiv(coeff(4, -3)) FROM dual
 UNION ALL
 SELECT polyderiv(coeff(1, 6, 5)) FROM dual
 UNION ALL
-SELECT polyderiv(coeff(-4, 3, -2, 1)) FROM dual
+SELECT polyderiv(coeff(4, 3, -2)) FROM dual
 UNION ALL
-SELECT polyderiv(coeff(1, 1, 0, -1, -1)) FROM dual;
+SELECT polyderiv(coeff(1, 1, -1, -1)) FROM dual;
