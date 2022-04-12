@@ -27,7 +27,7 @@ BEGIN
         END IF;
     END LOOP;
 
-    FOR i IN 1..nums.count LOOP
+    FOR i IN REVERSE 1..nums.count LOOP
         
         IF sign(nums(i)) = sign(1) THEN
             polstring := polstring || '+';
@@ -71,7 +71,7 @@ BEGIN
     END IF;
     
     
-    FOR i IN 2..nums.count LOOP -- Derives the polynomial and concats it onto polstring
+    FOR i IN REVERSE 2..nums.count LOOP -- Derives the polynomial and concats it onto polstring
 
         IF sign(nums(i)) = sign(1) THEN
             polstring := polstring || '+';
