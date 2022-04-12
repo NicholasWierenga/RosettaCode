@@ -1,70 +1,46 @@
 /*
 This will be my submission for the Palindromic Primes task on rosettacode.org
-for PL/SQL. The task is to find all palindromic prime numbers below 1000.
-PL/SQL isn't need for this and can be done simpler and faster with SQL.
+for PLSQL. The task is to find all palindromic prime numbers below 1000.
+PLSQL isn't need for this and can be done with SQL with not too much of a slowdown.
 http://rosettacode.org/wiki/Palindromic_primes
 */
-CREATE SEQUENCE seq1 INCREMENT BY 1;
 
-CREATE TABLE primelist (
-    prime   NUMBER(6),
-    tabrows NUMBER(6) DEFAULT seq1.NEXTVAL
+CREATE TABLE numlist (
+    nums INTEGER
 );
 
-DECLARE -- This works by filling a table with primes, then removes non-palindromes.
-    testpalprime INTEGER(6);
-    reverseprime INTEGER(6);
-    x            INTEGER(6) := 1;
-    rowsremain   INTEGER(6);
-    currrow      INTEGER(6);
+INSERT INTO numlist ( nums )
+    SELECT ROWNUM
+    FROM col$ -- Pick some large-rowed table and cross join to it to itself.
+    CROSS JOIN (
+        SELECT ROWNUM
+        FROM col$
+        FETCH FIRST 100 ROWS ONLY)
+    FETCH FIRST 5500000 ROWS ONLY; -- It took around a minute to sort through 5.5 million.
+
+DECLARE
+    prime INTEGER := 0;
 BEGIN
-    FOR n IN 1..1000 LOOP  -- This is to populate the table with primes in a given range.
-        FOR y IN 2..n LOOP
-            IF y = n THEN
-                INSERT INTO primelist ( prime ) VALUES ( n );
+    DELETE FROM numlist
+    WHERE nums = 1;
 
-            ELSIF n MOD y = 0 THEN
-                EXIT;
-            END IF;
-        END LOOP;
+    WHILE prime IS NOT NULL LOOP
+        
+        EXECUTE IMMEDIATE 'DELETE FROM numlist
+        WHERE mod(nums, ' || prime || ') = 0 AND ' || prime || ' <> nums
+        OR nums <> reverse(to_char(nums))'; -- Deletes all numbers that have prime as a factor and any non-palindromes.
+
+        SELECT MIN(nums)
+        INTO prime
+        FROM numlist
+        WHERE nums > prime; -- We pick the next number in the table, 
+                            -- which is prime due to it not being deleted by all previous primes used.
+
     END LOOP;
 
-    SELECT COUNT(*)
-    INTO rowsremain
-    FROM primelist;
+END;
 
-    SELECT seq1.CURRVAL
-    INTO currrow
-    FROM dual;
+SELECT nums AS "Palindromic Primes"
+FROM numlist;
 
-    currrow := currrow - rowsremain + 1;
-    WHILE x <= rowsremain LOOP
-        SELECT prime,
-               reverse(to_char(prime))
-        INTO
-            testpalprime,
-            reverseprime
-        FROM primelist
-        WHERE tabrows = currrow;
-
-        IF testpalprime <> reverseprime THEN
-            DELETE FROM primelist --When a non-palindrome is found, that row is deleted.
-            WHERE prime = testpalprime;
-
-            rowsremain := rowsremain - 1;
-            x := x - 1; -- Subtracts 1 so no numbers are skipped over.
-
-        END IF;
-
-        x := x + 1;
-        currrow := currrow + 1;
-    END LOOP;
-
-END; -- What's left in the table are palindromic primes.
-
-SELECT prime AS "Palindromic Primes"
-FROM primelist;
-
-DROP SEQUENCE seq1;
-
-DROP TABLE primelist PURGE;
+DROP TABLE numlist PURGE;
